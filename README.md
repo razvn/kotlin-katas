@@ -57,7 +57,7 @@ Note: Please do NOT read the second part before completing the first. Part of th
 
 Change your program to support variable width or height of the digits. For example for width = 3 and height = 2 the digit 2 will be:
 
-``text
+```text
  ___
     |
     |
@@ -66,7 +66,7 @@ Change your program to support variable width or height of the digits. For examp
 |
  ___
 
-``   
+```
 
 Tip: Refactor first to accept 5 lines per digit format:
 ```text
@@ -76,7 +76,6 @@ Tip: Refactor first to accept 5 lines per digit format:
   | |     |   |   | | |   | | |   |
      -   -       -   -       -   - 
 ```
-
 
 ## Diamond
 
