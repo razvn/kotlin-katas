@@ -1,3 +1,5 @@
+package diamond
+
 class Diamond {
     fun print(char: Char): String {
         if (char == 'A') return "A"

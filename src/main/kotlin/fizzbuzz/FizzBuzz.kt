@@ -1,3 +1,5 @@
+package fizzbuzz
+
 fun fizzBuzzStage2(i: Int): String {
     return getTextForStage(i, ::multipleOrContainsToText)
 }

@@ -1,4 +1,6 @@
-import NumberToLCD.StringForLine.*
+package numbertolcd
+
+import numbertolcd.NumberToLCD.StringForLine.*
 
 class NumberToLCD {
     private val linesOfThree = mapOf(

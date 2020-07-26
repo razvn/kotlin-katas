@@ -1,7 +1,8 @@
+package pokerhands
+
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.beOfType
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
-import io.kotest.matchers.nulls.beNull
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 
