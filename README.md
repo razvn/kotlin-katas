@@ -142,7 +142,7 @@ Tie.
 ## Args
 https://codingdojo.org/kata/Args/
 
-## Problem Description
+### Problem Description
 
 Most of us have had to parse command-line arguments from time to time. If we don’t have a convenient utility, then we simply walk the array of strings that is passed into the main function. There are several good utilities available from various sources, but they probably don’t do exactly what we want. So let’s write another one!
 
@@ -168,6 +168,43 @@ So the “g” flag indicates a list of strings, [“this”, “is”, “a”,
 
 Make sure your code is extensible, in that it is straightforward and obvious how to add new types of values.
 
-## Clues
+### Clues
 
 What the schema should look like and how to specify it is deliberately left vague in the Kata description. An important part of the Kata is to design a concise yet readable format for it.
+
+
+## Lift
+https://github.com/emilybache/Lift-Kata
+
+### Description
+Since lifts are everywhere and they contain software, how easy would it be to write a basic one? Let’s TDD a lift, starting with simple behaviors and working toward complex ones. Assume good input from calling code and concentrate on the main flow.
+
+Lift features:
+
+- a lift moves between a number of floors.
+- a lift has a panel of buttons passengers can press to request floors.
+- people can call the lift from other floors. A call has both a floor and a desired direction.
+- a lift has doors which may be open or closed.
+In this repository, that much is already implemented. The following features are not yet implemented:
+
+- a lift fulfills a request when it moves to the requested floor and opens the doors.
+- a lift fulfills a call when it moves to the correct floor, is about to go in the called direction, and opens the doors.
+- a lift can only move between floors if the doors are closed.
+
+Lifts do not respond immediately or do everything at once. To simplify handling time in this exercise, the provided LiftSystem class has a 'tick' method. Every time you call it, the lift system should simulate a unit of time passing, and update its state according to what changes occurred during that time period. Lifts can move between floors or open their doors for example.
+
+To simplify things, Lifts only accept new calls and requests when they are on a floor. (Then we don't have to model what happens when they are between floors).
+
+The starting code has a Lift class with basic attributes like a floor, requests and doors. Can you build on this code and create something that fulfills all the desired features? Consider Object-Oriented design principles. Can you make Lift and LiftSystem into a well-designed encapsulated objects?
+
+
+### Multiple lifts
+When you have a single lift working well, you may want to tackle these further features:
+
+- there can be more than one lift.
+- only one lift needs to respond to each call.
+- on each floor there is a monitor above each lift door. While the lift is moving it shows which floor it is on.
+- when the lift stops at a floor to answer a call, the monitor shows which direction it will go in.
+- when fulfilling a call, the relevant lift makes a 'DING' as it opens the doors.
+
+Note: the printer does not currently show the lift monitor and the ding.
