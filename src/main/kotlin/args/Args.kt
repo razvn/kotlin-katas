@@ -12,47 +12,66 @@ fun main() {
 
 class Args(schema: String) {
     val paramTypes: Map<String, DataType>
-    var params: Map<String, Any> = emptyMap()
+    private val paramsDefaultValues: Map<String, Any>
 
     init {
         paramTypes = parseSchema(schema)
+        paramsDefaultValues = paramTypes.map { it.key to defaultValueFor(it.value) }.toMap()
     }
 
-    fun parse(args: String) {
+    private fun defaultValueFor(type: DataType): Any = when (type) {
+        DataType.BOOLEAN -> false
+        DataType.INT -> 0
+        DataType.STRING -> ""
+        DataType.DOUBLE -> 0.0
+    }
+
+    fun parse(args: String = ""): Map<String, Any> {
         val argsList = args.split(" ")
-        val paramsBuild = mutableMapOf<String, Any>()
-        var currentArg = 0
-        while (currentArg < argsList.size) {
-            val arg = argsList[currentArg]
-            if (!arg.startsWith("-")) {
-                throw IllegalArgumentException("Argument `$arg` should start with `-` and be one of `${paramTypes.keys.joinToString(",")}`")
-            }
-            val argName = arg.drop(1)
-            if (!paramTypes.containsKey(arg.drop(1))) {
-                throw IllegalArgumentException("Argument `$argName` should be one of `${paramTypes.keys.joinToString(",")}`")
-            }
-
-            when {
-                paramTypes[argName] == DataType.BOOLEAN -> paramsBuild[argName] = true
-                paramTypes[argName] == DataType.INT -> {
-                    if (currentArg + 1 > (argsList.size - 1) ) throw IllegalArgumentException("Parameter `$argName` requires an argument")
-
+        val params = paramsDefaultValues.toMutableMap()
+        if (args.isNotBlank()) {
+            var currentArg = 0
+            while (currentArg < argsList.size) {
+                val arg = argsList[currentArg]
+                if (!arg.startsWith("-")) {
+                    throw IllegalArgumentException(
+                        "Argument `$arg` should start with `-` and be one of `${paramTypes.keys.joinToString(
+                            ","
+                        )}`"
+                    )
+                }
+                val argName = arg.drop(1)
+                if (!paramTypes.containsKey(arg.drop(1))) {
+                    throw IllegalArgumentException("Argument `$argName` should be one of `${paramTypes.keys.joinToString(",")}`")
                 }
 
+                val argumentsMaxIndex = argsList.size - 1
+                params[argName] = when (paramTypes[argName]) {
+                    DataType.BOOLEAN -> true
+                    DataType.INT -> nextArgValue(++currentArg, argumentsMaxIndex, argName, argsList, String::toIntOrNull)
+                    DataType.STRING -> nextArgValue(++currentArg, argumentsMaxIndex, argName, argsList, String::toString)
+                    DataType.DOUBLE -> nextArgValue(++currentArg, argumentsMaxIndex, argName, argsList, String::toDoubleOrNull)
+                    else -> throw IllegalAccessException("Parameter `$argName` type unknown")
+                }
+                currentArg++
             }
-
-            currentArg++
         }
-        params = paramsBuild
+        return params
+    }
+
+    private fun <T> nextArgValue(argIdx: Int, maxIdx: Int, argName: String, args: List<String>, f: ((String) -> T?)): T {
+        val paramValue = if (argIdx > maxIdx) throw IllegalArgumentException("Parameter `$argName` requires a value")
+        else args[argIdx]
+        return f.invoke(paramValue) ?: throw IllegalAccessException("Parameter `$argName` value `$paramValue` can't be converted")
     }
 
     private fun parseSchema(schema: String): Map<String, DataType> {
         return schema.split(";")
-                .map { p ->
-                    val param = p.split(":")
-                    if (param.size != 2) throw IllegalArgumentException("Incorrect parameter `$p` formant. Should be `<param>:<type>")
-                    else param.first() to parseType(param.last())
-                }.toMap()
+            .map { p ->
+                val param = p.split(":")
+                if (param.size != 2) throw IllegalArgumentException("Incorrect parameter `$p` formant. Should be `<param>:<type>")
+                else param.first() to parseType(param.last())
+            }.toMap()
 
     }
 
