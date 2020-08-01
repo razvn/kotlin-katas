@@ -3,11 +3,15 @@ package args
 import Args
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.maps.beEmpty
 import io.kotest.matchers.maps.shouldHaveSize
 import io.kotest.matchers.nulls.beNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldHave
 import io.kotest.matchers.shouldNot
+import io.kotest.matchers.types.shouldBeTypeOf
 import java.lang.IllegalArgumentException
 
 class ArgsTest : FunSpec({
@@ -94,10 +98,10 @@ class ArgsTest : FunSpec({
 
         test("Parse multiple params should set right values") {
             val args = Args("l:b;p:i;d:s")
-            val parsedArgs = args.parse("-l -p 588 -d /tmp/test/file.tmp")
+            val parsedArgs = args.parse("-l -p -588 -d /tmp/test/file.tmp")
             parsedArgs shouldNot beEmpty()
             parsedArgs["l"] shouldBe true
-            parsedArgs["p"] shouldBe 588
+            parsedArgs["p"] shouldBe -588
             parsedArgs["d"] shouldBe "/tmp/test/file.tmp"
         }
 
@@ -106,6 +110,33 @@ class ArgsTest : FunSpec({
             shouldThrow<IllegalArgumentException> {
                 args.parse("-l -p 588 -d /tmp/test/file.tmp -s")
             }
+        }
+
+        test("Parse list of string should set its value") {
+            val args = Args("a:ls")
+            val parsedArgs = args.parse("-a this,is,a,test")
+            parsedArgs shouldNot beEmpty()
+            val argA = parsedArgs["a"] as List<*>
+            argA shouldHaveSize 4
+            argA shouldContainExactly listOf("this", "is", "a", "test")
+        }
+
+        test("Parse list of int should set its value") {
+            val args = Args("a:li")
+            val parsedArgs = args.parse("-a 3,55,9767")
+            parsedArgs shouldNot beEmpty()
+            val argA = parsedArgs["a"] as List<*>
+            argA shouldHaveSize 3
+            argA shouldContainExactly listOf(3, 55, 9767)
+        }
+
+        test("Parse list of double should set its value") {
+            val args = Args("a:ld")
+            val parsedArgs = args.parse("-a 3.4,55.66,9767.67")
+            parsedArgs shouldNot beEmpty()
+            val argA = parsedArgs["a"] as List<*>
+            argA shouldHaveSize 3
+            argA shouldContainExactly listOf(3.4, 55.66, 9767.67)
         }
     }
 })

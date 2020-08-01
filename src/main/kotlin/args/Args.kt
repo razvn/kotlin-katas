@@ -3,17 +3,18 @@ fun main() {
 }
 
 /*
-   schema format: <param>:<type><required>;
+   schema format: <param>:<type>;\
      - param = letter or string of the parameter
-     - type = i = int, b = boolean, d = double, s = string
+     - type = i = int, b = boolean, d = double, s = string,
+        li = list of integers, lb = list of booleans, ls = list of strings, ld = list of doubles
 
-    ex: l:b;p:i
+     - default list separator is `,` but can be changed in the constructor
+    ex: l:b;p:i;s:ls
  */
 
-class Args(schema: String) {
+class Args(schema: String, private val listSeparator: Char = ',') {
     val paramTypes: Map<String, DataType>
     private val paramsDefaultValues: Map<String, Any>
-
     init {
         paramTypes = parseSchema(schema)
         paramsDefaultValues = paramTypes.map { it.key to defaultValueFor(it.value) }.toMap()
@@ -24,6 +25,9 @@ class Args(schema: String) {
         DataType.INT -> 0
         DataType.STRING -> ""
         DataType.DOUBLE -> 0.0
+        DataType.LISTSTRING -> emptyList<String>()
+        DataType.LISTINT -> emptyList<Int>()
+        DataType.LISTDOUBLE -> emptyList<Double>()
     }
 
     fun parse(args: String = ""): Map<String, Any> {
@@ -51,12 +55,27 @@ class Args(schema: String) {
                     DataType.INT -> nextArgValue(++currentArg, argumentsMaxIndex, argName, argsList, String::toIntOrNull)
                     DataType.STRING -> nextArgValue(++currentArg, argumentsMaxIndex, argName, argsList, String::toString)
                     DataType.DOUBLE -> nextArgValue(++currentArg, argumentsMaxIndex, argName, argsList, String::toDoubleOrNull)
-                    else -> throw IllegalAccessException("Parameter `$argName` type unknown")
+                    DataType.LISTSTRING -> nextArgValue(++currentArg, argumentsMaxIndex, argName, argsList, ::listOfString)
+                    DataType.LISTINT -> nextArgValue(++currentArg, argumentsMaxIndex, argName, argsList, ::listOfInt)
+                    DataType.LISTDOUBLE -> nextArgValue(++currentArg, argumentsMaxIndex, argName, argsList, ::listOfDouble)
+                    else -> throw IllegalAccessException("Parameter `$argName` null")
                 }
                 currentArg++
             }
         }
         return params
+    }
+
+    private fun listOfString(s: String): List<String> {
+        return s.split(listSeparator)
+    }
+
+    private fun listOfInt(s: String): List<Int> {
+        return s.split(listSeparator).map { it.toIntOrNull() ?: throw IllegalAccessException("Parameter `$it` of the list `$s` should be an int") }
+    }
+
+    private fun listOfDouble(s: String): List<Double> {
+        return s.split(listSeparator).map { it.toDoubleOrNull() ?: throw IllegalAccessException("Parameter `$it` of the list `$s` should be a double") }
     }
 
     private fun <T> nextArgValue(argIdx: Int, maxIdx: Int, argName: String, args: List<String>, f: ((String) -> T?)): T {
@@ -80,11 +99,14 @@ class Args(schema: String) {
         "i" -> DataType.INT
         "d" -> DataType.DOUBLE
         "s" -> DataType.STRING
-        else -> throw IllegalArgumentException("Type $type is unknown. Supported types are: b,i,d,s (boolean, integer, double, string)")
+        "ls" -> DataType.LISTSTRING
+        "li" -> DataType.LISTINT
+        "ld" -> DataType.LISTDOUBLE
+        else -> throw IllegalArgumentException("Type $type is unknown. Supported types are: b,i,d,s,li,ld,ls (boolean, integer, double, string, list of integers, list of doubles, list of strings)")
     }
 
 
-    enum class DataType(val value: Any) {
-        BOOLEAN(false), INT(0), DOUBLE(0.0), STRING("")
+    enum class DataType {
+        BOOLEAN, INT, DOUBLE, STRING, LISTSTRING, LISTINT, LISTDOUBLE
     }
 }
